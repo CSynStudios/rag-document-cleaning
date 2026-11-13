@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 PROJECT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT))
 SPEC = importlib.util.spec_from_file_location("clean_documents", PROJECT / "clean_documents.py")
 cleaner = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = cleaner
@@ -111,7 +112,7 @@ def test_rejects_nested_output_and_missing_inputs(tmp_path):
         cleaner.clean_documents(tmp_path, tmp_path / "output")
     incoming = tmp_path / "incoming"
     incoming.mkdir()
-    with pytest.raises(ValueError, match="No HTML or text"):
+    with pytest.raises(ValueError, match="No HTML, text or PDF"):
         cleaner.clean_documents(incoming, tmp_path / "output")
 
 
@@ -121,7 +122,7 @@ def test_enforces_document_limit(tmp_path, monkeypatch):
     for index in range(3):
         (incoming / f"{index}.txt").write_text("text", encoding="utf-8")
     monkeypatch.setattr(cleaner, "MAX_DOCUMENTS", 2)
-    with pytest.raises(ValueError, match="at most 2"):
+    with pytest.raises(ValueError, match="[Aa]t most 2"):
         cleaner.clean_documents(incoming, tmp_path / "outputs")
 
 
@@ -171,3 +172,34 @@ def test_downloader_rejects_non_html_response(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="Expected an HTML"):
         sample.fetch_sample(destination)
     assert not destination.exists()
+
+
+def test_presidio_redacts_names_and_checksummed_identifiers():
+    from pii_redaction import redact_pii
+
+    text = "My name is John Smith. My credit card number is 4111 1111 1111 1111. My IP address is 192.168.1.23."
+    redacted, counts = redact_pii(text)
+    assert "John Smith" not in redacted
+    assert "4111 1111 1111 1111" not in redacted
+    assert "192.168.1.23" not in redacted
+    assert counts["person"] >= 1
+    assert counts["credit_card"] == 1
+    assert counts["ip_address"] == 1
+
+
+def test_pdf_inputs_are_reported_without_overwriting_sources(tmp_path):
+    from pypdf import PdfWriter
+
+    incoming = tmp_path / "incoming"
+    incoming.mkdir()
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    with (incoming / "blank.pdf").open("wb") as stream:
+        writer.write(stream)
+    writer.encrypt("example-password")
+    with (incoming / "locked.pdf").open("wb") as stream:
+        writer.write(stream)
+    (incoming / "broken.pdf").write_bytes(b"not a PDF")
+    report = cleaner.clean_documents(incoming, tmp_path / "output", pii_mode="contacts")
+    assert report["summary"]["statuses"] == {"rejected_empty": 1, "rejected_encrypted_pdf": 1, "rejected_invalid_pdf": 1}
+    assert (incoming / "broken.pdf").read_bytes() == b"not a PDF"

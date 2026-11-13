@@ -15,20 +15,25 @@ SOURCES = {
 }
 
 
-def fetch_sample(destination):
+def fetch_sample(destination, include_pdf=False):
     destination = Path(destination)
     if destination.exists():
         raise ValueError("Destination already exists; use a new directory to preserve the previous sample.")
     downloads = []
-    for filename, url in SOURCES.items():
+    sources = dict(SOURCES)
+    if include_pdf:
+        sources["accessibility-example.pdf"] = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    for filename, url in sources.items():
         request = Request(url, headers={"User-Agent": "VeyraDocumentCleaning/0.1"})
         with urlopen(request, timeout=30) as response:
-            if response.headers.get_content_type() != "text/html":
-                raise ValueError("Expected an HTML response from the documentation source.")
+            expected_type = "application/pdf" if filename.endswith(".pdf") else "text/html"
+            if response.headers.get_content_type() != expected_type:
+                raise ValueError(f"Expected an HTML or PDF response of type {expected_type} from the source.")
             payload = response.read(MAX_BYTES + 1)
         if len(payload) > MAX_BYTES:
             raise ValueError("A documentation page exceeds the sample size limit.")
-        payload.decode("utf-8-sig")
+        if not filename.endswith(".pdf"):
+            payload.decode("utf-8-sig")
         downloads.append((filename, url, payload))
     destination.mkdir(parents=True)
     manifest = []
@@ -47,15 +52,16 @@ def fetch_sample(destination):
         json.dumps({"downloaded_at": datetime.now(timezone.utc).isoformat(), "sources": manifest}, indent=2) + "\n",
         encoding="utf-8",
     )
-    print(f"Saved {len(downloads) - 1} documentation pages and a license page.")
+    print(f"Saved {len(downloads) - 1} source documents and a license page.")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Download three official Python documentation pages for pipeline evaluation.")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--include-pdf", action="store_true")
     arguments = parser.parse_args()
     try:
-        fetch_sample(arguments.output)
+        fetch_sample(arguments.output, arguments.include_pdf)
     except (OSError, ValueError) as error:
         parser.exit(1, f"Sample download failed: {error}\n")
 

@@ -1,6 +1,7 @@
 import argparse
 from collections import Counter
 import hashlib
+from io import BytesIO
 import json
 from pathlib import Path
 import re
@@ -8,6 +9,10 @@ import unicodedata
 
 from bs4 import BeautifulSoup
 from datasketch import MinHash, MinHashLSH
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
+
+from pii_redaction import redact_pii
 
 MAX_BYTES = 2_000_000
 MAX_DOCUMENTS = 200
@@ -62,7 +67,7 @@ def chunk_text(text):
             break
 
 
-def clean_documents(input_directory, output_directory):
+def clean_documents(input_directory, output_directory, pii_mode="presidio"):
     input_directory = Path(input_directory).resolve()
     output_directory = Path(output_directory).resolve()
     if not input_directory.is_dir():
@@ -71,16 +76,18 @@ def clean_documents(input_directory, output_directory):
         raise ValueError("Input and output directories must be separate, without nesting.")
     if output_directory.exists():
         raise ValueError("Output directory already exists; choose a new run directory.")
+    if pii_mode not in {"presidio", "contacts"}:
+        raise ValueError("PII mode must be presidio or contacts.")
     paths = []
     for path in input_directory.rglob("*"):
-        if path.is_file() and path.suffix.lower() in {".html", ".htm", ".txt"}:
+        if path.is_file() and path.suffix.lower() in {".html", ".htm", ".txt", ".pdf"}:
             if path.is_symlink():
                 raise ValueError("Symbolic-link inputs are not supported.")
             paths.append(path)
             if len(paths) > MAX_DOCUMENTS:
-                raise ValueError(f"This milestone supports at most {MAX_DOCUMENTS} documents per run.")
+                raise ValueError(f"At most {MAX_DOCUMENTS} documents are supported per run.")
     if not paths:
-        raise ValueError("No HTML or text files were found.")
+        raise ValueError("No HTML, text or PDF files were found.")
 
     retained_documents = []
     chunks = []
@@ -98,11 +105,25 @@ def clean_documents(input_directory, output_directory):
         if len(payload) > MAX_BYTES:
             decisions.append({**decision, "status": "rejected_too_large"})
             continue
-        try:
-            content = payload.decode("utf-8-sig")
-        except UnicodeDecodeError:
-            decisions.append({**decision, "status": "rejected_encoding"})
-            continue
+        if path.suffix.lower() == ".pdf":
+            try:
+                reader = PdfReader(BytesIO(payload))
+                if reader.is_encrypted:
+                    decisions.append({**decision, "status": "rejected_encrypted_pdf"})
+                    continue
+                if len(reader.pages) > 200:
+                    decisions.append({**decision, "status": "rejected_pdf_page_limit"})
+                    continue
+                content = " ".join(page.extract_text() or "" for page in reader.pages)
+            except PdfReadError:
+                decisions.append({**decision, "status": "rejected_invalid_pdf"})
+                continue
+        else:
+            try:
+                content = payload.decode("utf-8-sig")
+            except UnicodeDecodeError:
+                decisions.append({**decision, "status": "rejected_encoding"})
+                continue
         if "\x00" in content:
             decisions.append({**decision, "status": "rejected_binary"})
             continue
@@ -137,6 +158,10 @@ def clean_documents(input_directory, output_directory):
             shingle_sets[identifier] = shingles
             lsh.insert(identifier, signature)
         redacted_text, redactions = redact_contacts(text)
+        if pii_mode == "presidio":
+            redacted_text, additional_redactions = redact_pii(redacted_text)
+            for entity, count in additional_redactions.items():
+                redactions[entity] = redactions.get(entity, 0) + count
         redaction_totals.update(redactions)
         document_chunks = list(chunk_text(redacted_text))
         retained_documents.append(
@@ -149,7 +174,7 @@ def clean_documents(input_directory, output_directory):
         )
 
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "settings": {
             "chunk_words": CHUNK_WORDS,
             "overlap_words": OVERLAP_WORDS,
@@ -158,7 +183,10 @@ def clean_documents(input_directory, output_directory):
             "minhash_permutations": 128,
             "minhash_seed": 42,
             "shingle_words": 5,
-            "redaction_scope": ["email", "PH mobile", "US phone with +1 prefix"],
+            "pii_mode": pii_mode,
+            "person_detection": "English multi-word proper names" if pii_mode == "presidio" else "disabled",
+            "redaction_scope": ["email", "PH mobile", "US phone with +1 prefix"]
+            + (["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "CREDIT_CARD", "US_SSN", "IP_ADDRESS", "IBAN_CODE"] if pii_mode == "presidio" else []),
         },
         "summary": {
             "input_documents": len(paths),
@@ -181,15 +209,18 @@ def clean_documents(input_directory, output_directory):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Clean local UTF-8 HTML/text into redacted, deduplicated chunks.")
+    parser = argparse.ArgumentParser(description="Clean local HTML, UTF-8 text and text PDFs into redacted, deduplicated chunks.")
     parser.add_argument("--input", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--pii-mode", choices=["presidio", "contacts"], default="presidio")
     arguments = parser.parse_args()
     try:
-        report = clean_documents(arguments.input, arguments.output)
+        report = clean_documents(arguments.input, arguments.output, arguments.pii_mode)
     except (OSError, ValueError) as error:
         parser.exit(1, f"Cleaning failed: {error}\n")
     print(json.dumps(report["summary"], indent=2))
+    if not report["summary"]["retained_documents"]:
+        parser.exit(2, "No documents were retained; inspect report.json.\n")
 
 
 if __name__ == "__main__":
