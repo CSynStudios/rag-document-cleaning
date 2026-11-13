@@ -22,4 +22,4 @@ Nineteen project tests passed, covering redaction examples, duplicate handling, 
 
 Redaction covers selected contact patterns; names, addresses, secrets and other identifiers require further work and review. Duplicate similarity does not measure meaning, so a small but important revision can require manual retention. HTML code and table layout are flattened. Retrieval quality, PDF extraction and production-scale performance have not been tested.
 
-The downloaded sources and generated outputs remain local. Before public use, this draft needs the owner's review and a decision about repository visibility. Supporting details and exact boundaries are recorded in VERIFICATION.md and GUIDANCE.md.
+Source code and documentation are published at [CSynStudios/rag-document-cleaning](https://github.com/CSynStudios/rag-document-cleaning). Downloaded sources and generated outputs remain local. Supporting details and exact boundaries are recorded in VERIFICATION.md and GUIDANCE.md.

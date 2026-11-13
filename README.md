@@ -1,5 +1,7 @@
 # RAG Document Cleaning
 
+[![Tests](https://github.com/CSynStudios/rag-document-cleaning/actions/workflows/tests.yml/badge.svg)](https://github.com/CSynStudios/rag-document-cleaning/actions/workflows/tests.yml)
+
 A Python pipeline that prepares local HTML and text for retrieval: remove page clutter, identify duplicates, redact supported contact patterns, and export inspectable text chunks.
 
 **Status: working portfolio demo.** The current implementation handles HTML and plain text. Its redaction covers selected contact formats; broader PII detection and retrieval-quality evaluation are future work.
@@ -51,7 +53,7 @@ python -m pip check
 python -m pytest -q
 ```
 
-The test suite uses synthetic snippets generated in temporary directories. It requires no downloaded dataset or network access. The GitHub Actions workflow is configured to run it on pushes and pull requests; no hosted result is claimed until the first remote run completes.
+The test suite uses synthetic snippets generated in temporary directories. It requires no downloaded dataset or network access. GitHub Actions runs the project tests on pushes and pull requests. The [first hosted run](https://github.com/CSynStudios/rag-document-cleaning/actions/runs/43405189860) passed all 19 tests on Linux with Python 3.12.
 
 ## Run the public documentation demo
 

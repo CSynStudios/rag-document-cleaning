@@ -45,7 +45,7 @@ A sample text review checked the opening of each retained document, heading-link
 
 During the initial milestone, the workspace ignore rules were tested in a temporary Git repository. `.conda/python.exe`, `.conda-backup/python.exe`, `data/python-docs/csv.html`, `outputs/document-cleaning/run-001/chunks.jsonl` and `.env` matched the rules. At that initial check, the portfolio folder was not a Git repository and no commits, remote setup or publication had occurred.
 
-The existing environment backup was preserved. GitHub CLI authentication remains unverified because the CLI was not found in the earlier inspection.
+The existing environment backup was preserved. GitHub CLI was unavailable during the initial inspection; it was later installed, authenticated as CSynStudios and used for publication.
 
 ## Remaining evidence gaps
 
@@ -54,4 +54,4 @@ There is no representative labeled PII benchmark, general duplicate precision/re
 
 After organization into a separate repository, the 19 project tests passed from a portable export containing only the staged repository files (3.04 seconds). This confirms that project code and tests do not depend on sibling portfolio folders. The full local workspace still passed 21 tests, including its two scaffold checks (1.79 seconds).
 
-The project now owns its tests and ignored local sample/output folders. Its requirements.txt and requirements-dev.txt support a standalone Python 3.12 setup; environment.yml supports Conda. The shared workspace environment remains in place. The configured GitHub Actions workflow has not yet run remotely and no hosted passing badge is displayed.
+The project now owns its tests and ignored local sample/output folders. Its requirements.txt and requirements-dev.txt support a standalone Python 3.12 setup; environment.yml supports Conda. The shared workspace environment remains in place. The [first GitHub Actions run](https://github.com/CSynStudios/rag-document-cleaning/actions/runs/43405189860) completed successfully on 13 November 2026: 19 project tests passed in 1.08 seconds on the hosted Linux runner with Python 3.12. A live workflow-status badge is displayed in the README. This is test-suite evidence, not a throughput benchmark.
