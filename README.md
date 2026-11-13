@@ -4,7 +4,9 @@
 
 A Python pipeline that prepares local HTML and text for retrieval: remove page clutter, identify duplicates, redact supported contact patterns, and export inspectable text chunks.
 
-**Status: working portfolio demo.** The current implementation handles HTML and plain text. Its redaction covers selected contact formats; broader PII detection and retrieval-quality evaluation are future work.
+**Independent Project Showcase**
+
+The implementation handles HTML and plain text, with redaction for selected contact formats. Broader PII detection and retrieval-quality evaluation are tracked as extensions.
 
 | Verified sample | Observed result |
 | --- | --- |
@@ -13,9 +15,9 @@ A Python pipeline that prepares local HTML and text for retrieval: remove page c
 | Output chunks | 61 |
 | Project tests | 19 passing |
 
-The public sample triggered no contact redactions or duplicate removals. Those behaviors are exercised by synthetic tests. These counts describe a small demonstration, not production-scale capacity.
+The public sample triggered no contact redactions or duplicate removals. Those behaviors are exercised by synthetic tests. These measurements apply to the documented three-page evaluation. Larger-scale capacity has not been benchmarked.
 
-## What it demonstrates
+## Pipeline capabilities
 
 - HTML extraction and Unicode/whitespace normalization with Beautiful Soup.
 - Exact deduplication and MinHash LSH candidate detection with a direct Jaccard confirmation at 0.90.
@@ -53,9 +55,9 @@ python -m pip check
 python -m pytest -q
 ```
 
-The test suite uses synthetic snippets generated in temporary directories. It requires no downloaded dataset or network access. GitHub Actions runs the project tests on pushes and pull requests. The [first hosted run](https://github.com/CSynStudios/rag-document-cleaning/actions/runs/43405189860) passed all 19 tests on Linux with Python 3.12.
+The test suite uses synthetic snippets generated in temporary directories. It requires no downloaded dataset or network access. GitHub Actions runs the project tests on pushes and pull requests. The [hosted validation run](https://github.com/CSynStudios/rag-document-cleaning/actions/runs/43405189860) passed all 19 tests on Linux with Python 3.12.
 
-## Run the public documentation demo
+## Run the documentation pipeline
 
 ```powershell
 python fetch_sample.py --output data/python-docs
@@ -90,6 +92,6 @@ Microsoft Presidio, PDF/OCR ingestion, embeddings, a vector database, retrieval 
 
 ## Sources and local data
 
-The demonstration uses the official Python documentation for [csv](https://docs.python.org/3.12/library/csv.html), [json](https://docs.python.org/3.12/library/json.html) and [textwrap](https://docs.python.org/3.12/library/textwrap.html). Its [license page](https://docs.python.org/3.12/license.html) is preserved locally by the downloader. Source pages are cleaned, contact patterns replaced where detected, duplicates removed where identified and retained text chunked.
+The evaluation uses the official Python documentation for [csv](https://docs.python.org/3.12/library/csv.html), [json](https://docs.python.org/3.12/library/json.html) and [textwrap](https://docs.python.org/3.12/library/textwrap.html). Its [license page](https://docs.python.org/3.12/license.html) is preserved locally by the downloader. Source pages are cleaned, contact patterns replaced where detected, duplicates removed where identified and retained text chunked.
 
-Downloaded documents, source manifests and generated outputs are excluded from Git. Only code, setup files, synthetic test logic and documentation belong in this showcase repository.
+Downloaded documents, source manifests and generated outputs are excluded from Git. Only code, setup files, synthetic test logic and documentation belong in this repository.

@@ -1,13 +1,13 @@
 # Verification record
 
-Executed on 13 November 2026 in the local Windows workspace using Python 3.12.16. This record describes a working first milestone, not a reviewed production system.
+Executed on 13 November 2026 in the local Windows workspace using Python 3.12.16. This record covers local validation and hosted automated tests for the Independent Project Showcase.
 
 ## Automated checks
 
 `python -m pytest -q` passed **21 tests** in the shared environment. The final run completed in 1.69 seconds. These include the two original scaffold checks and document-cleaning tests covering:
 
 - Removal of HTML navigation, scripts, hidden elements and heading-link markers while preserving inline text.
-- Supported contact patterns: two synthetic emails and three supported phone formats; an ISO date remains intact. A separate test demonstrates that names and addresses remain outside the detector's scope.
+- Supported contact patterns: two synthetic emails and three supported phone formats; an ISO date remains intact. A separate test confirms that names and addresses remain outside the detector's scope.
 - Chunk bounds, overlap and exact reconstruction of the redacted input across seven boundary lengths.
 - An eight-file synthetic corpus: two retained documents, one exact duplicate, one near duplicate, one empty file, one invalid UTF-8 file, one binary file and one oversized file.
 - Direct rejection of an unrelated LSH candidate, deterministic repeated output, preservation of existing outputs and rejection of nested output, missing inputs and an excessive document count.
@@ -43,15 +43,15 @@ A sample text review checked the opening of each retained document, heading-link
 
 ## Local-only and Git checks
 
-During the initial milestone, the workspace ignore rules were tested in a temporary Git repository. `.conda/python.exe`, `.conda-backup/python.exe`, `data/python-docs/csv.html`, `outputs/document-cleaning/run-001/chunks.jsonl` and `.env` matched the rules. At that initial check, the portfolio folder was not a Git repository and no commits, remote setup or publication had occurred.
+During environment verification, the workspace ignore rules were tested in a temporary Git repository. `.conda/python.exe`, `.conda-backup/python.exe`, `data/python-docs/csv.html`, `outputs/document-cleaning/run-001/chunks.jsonl` and `.env` matched the rules. At that initial check, the workspace folder was not a Git repository and no commits, remote setup or publication had occurred.
 
 The existing environment backup was preserved. GitHub CLI was unavailable during the initial inspection; it was later installed, authenticated as CSynStudios and used for publication.
 
 ## Remaining evidence gaps
 
 There is no representative labeled PII benchmark, general duplicate precision/recall evaluation, large-corpus measurement, PDF/OCR validation, semantic chunking, retrieval-quality evaluation or human acceptance review. Names, addresses and unsupported identifiers are not redacted. These limits must accompany any case-study claims.
-## Independent showcase verification
+## Repository independence verification
 
-After organization into a separate repository, the 19 project tests passed from a portable export containing only the staged repository files (3.04 seconds). This confirms that project code and tests do not depend on sibling portfolio folders. The full local workspace still passed 21 tests, including its two scaffold checks (1.79 seconds).
+After organization into a separate repository, the 19 project tests passed from a portable export containing only the staged repository files (3.04 seconds). This confirms that project code and tests do not depend on sibling project folders. The full local workspace still passed 21 tests, including its two scaffold checks (1.79 seconds).
 
-The project now owns its tests and ignored local sample/output folders. Its requirements.txt and requirements-dev.txt support a standalone Python 3.12 setup; environment.yml supports Conda. The shared workspace environment remains in place. The [first GitHub Actions run](https://github.com/CSynStudios/rag-document-cleaning/actions/runs/43405189860) completed successfully on 13 November 2026: 19 project tests passed in 1.08 seconds on the hosted Linux runner with Python 3.12. A live workflow-status badge is displayed in the README. This is test-suite evidence, not a throughput benchmark.
+The project now owns its tests and ignored local sample/output folders. Its requirements.txt and requirements-dev.txt support a standalone Python 3.12 setup; environment.yml supports Conda. The shared workspace environment remains in place. The [GitHub Actions validation run](https://github.com/CSynStudios/rag-document-cleaning/actions/runs/43405189860) completed successfully on 13 November 2026: 19 project tests passed in 1.08 seconds on the hosted Linux runner with Python 3.12. A live workflow-status badge is displayed in the README. This is test-suite evidence, not a throughput benchmark.

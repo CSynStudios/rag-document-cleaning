@@ -21,7 +21,7 @@ def fetch_sample(destination):
         raise ValueError("Destination already exists; use a new directory to preserve the previous sample.")
     downloads = []
     for filename, url in SOURCES.items():
-        request = Request(url, headers={"User-Agent": "VeyraPortfolioSample/0.1"})
+        request = Request(url, headers={"User-Agent": "VeyraDocumentCleaning/0.1"})
         with urlopen(request, timeout=30) as response:
             if response.headers.get_content_type() != "text/html":
                 raise ValueError("Expected an HTML response from the documentation source.")
@@ -51,7 +51,7 @@ def fetch_sample(destination):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Download three official Python documentation pages for a local demo.")
+    parser = argparse.ArgumentParser(description="Download three official Python documentation pages for pipeline evaluation.")
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     try:

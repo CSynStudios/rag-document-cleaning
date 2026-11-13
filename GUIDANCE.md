@@ -30,9 +30,9 @@ The downloader rejects an existing destination, limits each response and downloa
 
 ## Next project step
 
-Build a labeled synthetic evaluation for redaction and duplicate decisions before expanding claims. Consider Presidio when adding names and other PII requires NLP, evaluate its language/model behavior and keep the model setup reproducible. Add PDF support only against a concrete sample. Leave the tabular and multimodal projects at their scaffolds until this first case study has been reviewed.
+Build a labeled synthetic evaluation for redaction and duplicate decisions before expanding claims. Consider Presidio when adding names and other PII requires NLP, evaluate its language/model behavior and keep the model setup reproducible. Add PDF support only against a concrete sample. The tabular and multimodal specifications are maintained in their separate repositories.
 
-The showcase is published as the public repository CSynStudios/rag-document-cleaning. Source corpora, outputs and private content remain excluded. The case study reports the verified demonstration and its limits.
+The Independent Project Showcase is published as the public repository CSynStudios/rag-document-cleaning. Source corpora, outputs and private content remain excluded. The case study reports the verified evaluation and its limits.
 
 ## API references checked during implementation
 

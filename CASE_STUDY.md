@@ -1,6 +1,6 @@
 # Preparing web documentation for retrieval
 
-Status: self-directed portfolio demonstration, first working milestone. This was not commissioned client work.
+**Independent Project Showcase**
 
 ## Problem
 
@@ -14,7 +14,7 @@ The pipeline replaces email addresses and a documented set of phone formats with
 
 ## Evidence
 
-A local run over three official Python documentation pages retained 8,957 words and produced 61 chunks. The measured cleaning invocation took 1.657 seconds, including Python startup. These are observations from a small demonstration, with no claim about large-scale throughput.
+A local run over three official Python documentation pages retained 8,957 words and produced 61 chunks. The measured cleaning invocation took 1.657 seconds, including Python startup. These measurements apply to the documented input collection. Larger-scale throughput has not been benchmarked.
 
 Nineteen project tests passed, covering redaction examples, duplicate handling, chunk reconstruction and invalid-file boundaries. Two additional workspace scaffold checks brought the original combined suite to twenty-one. A synthetic eight-file case retained two documents, identified one exact and one near duplicate, and reported four invalid inputs. The environment was successfully rebuilt from its recorded configuration and passed the same test suite.
 
